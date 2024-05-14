@@ -26,8 +26,8 @@ description:
 
 build-type:     Simple
 tested-with:
-  GHC==9.4.3,
-  GHC==9.2.5,
+  GHC==9.4.8,
+  GHC==9.2.8,
   GHC==9.0.2,
   GHC==8.10.7,
   GHC==8.8.4,
