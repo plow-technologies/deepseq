@@ -214,14 +214,19 @@ infixr 0 `deepseq`
 deepseq :: NFData a => a -> b -> b
 deepseq a b = rnf a `seq` b
 
--- | the deep analogue of '$!'.  In the expression @f $!! x@, @x@ is
--- fully evaluated before the function @f@ is applied to it.
+-- | The deep analogue of '$!'.  @f $!! x@ fully evaluates @x@
+-- before returning @f x@.
+--
+-- There is no guarantee about the ordering of evaluation.
+-- @f x@ may be evaluated before @x@ is fully evaluated.
+-- To impose an actual order on evaluation, use 'pseq' from
+-- "Control.Parallel" in the @parallel@ package.
 --
 -- @since 1.2.0.0
 ($!!) :: (NFData a) => (a -> b) -> a -> b
 f $!! x = x `deepseq` f x
 
--- | a variant of 'deepseq' that is useful in some circumstances:
+-- | A variant of 'deepseq' that is useful in some circumstances:
 --
 -- > force x = x `deepseq` x
 --
