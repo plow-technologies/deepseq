@@ -78,6 +78,7 @@ module Control.DeepSeq (
   ($!!),
   (<$!!>),
   rwhnf,
+  Unit(..),
 
   -- * Liftings of the 'NFData' class
 
@@ -396,6 +397,45 @@ class (forall a. NFData a => NFData1 (p a)) => NFData2 p where
 -- @since 1.4.3.0
 rnf2 :: (NFData2 p, NFData a, NFData b) => p a b -> ()
 rnf2 = liftRnf2 rnf rnf
+
+-- | A monoid with @(<>) = seq@.
+--
+-- Its purpose is to allow reducing structures to normal form using
+-- 'foldMap'-like functions.
+--
+-- ==== __Examples__
+--
+-- @
+-- data Three a = Three a a a
+--
+-- instance Foldable Three where
+--   foldMap f (Three x1 x2 x3) = f x1 <> f x2 <> f x3
+--
+-- instance NFData a => NFData (Three a) where
+--   rnf = runUnit . foldMap (Unit . rnf)
+-- @
+--
+-- @
+-- data Tree a b
+--   = NodeA a [Tree a b]
+--   | NodeB b [Tree a b]
+--
+-- foldMapTree :: Monoid m => (a -> m) -> (b -> m) -> Tree a b -> m
+-- foldMapTree f g = go
+--   where
+--     go (NodeA x ts) = f x <> foldMap go ts
+--     go (NodeB y ts) = g y <> foldMap go ts
+--
+-- instance NFData2 Tree where
+--   liftRnf2 r r' = runUnit . foldMapTree (Unit . r) (Unit . r')
+-- @
+newtype Unit = Unit { runUnit :: () }
+
+instance Semigroup Unit where
+  (<>) = seq
+
+instance Monoid Unit where
+  mempty = Unit ()
 
 instance NFData Int where rnf = rwhnf
 
